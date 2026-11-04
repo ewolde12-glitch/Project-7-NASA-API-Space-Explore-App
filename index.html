@@ -3,45 +3,71 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Explore NASA's Astronomy Picture of the Day archive by date."
+    />
     <title>NASA Space Explorer</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="style.css" />
+    <script src="script.js" defer></script>
   </head>
   <body>
-    <header>
-      <div class="brand">
+    <header class="site-header">
+      <a class="brand" href="./" aria-label="NASA Space Explorer home">
         <img
           class="brand-logo"
-          src="./New%20folder/image.png"
-          alt="NASA Space Explorer logo"
+          src="./New%20folder/NASA%20image.png"
+          alt="NASA"
         />
-        <h1>NASA Space Explorer</h1>
-      </div>
-      <p>Explore the cosmos through NASA's Astronomy Picture of the Day archive.</p>
+        <span>Space Explorer</span>
+      </a>
+      <p class="header-tagline">A window into the universe, powered by NASA.</p>
     </header>
 
-    <main class="search-section">
-      <div class="date-controls">
-        <label for="startDate">Start Date</label>
-        <input type="date" id="startDate" />
-      </div>
+    <main>
+      <section class="hero" aria-labelledby="page-title">
+        <p class="eyebrow">NASA · Astronomy Picture of the Day</p>
+        <h1 id="page-title">The universe, <span>one day at a time.</span></h1>
+        <p class="intro">
+          Choose a date range and explore the extraordinary images and stories
+          captured by NASA.
+        </p>
 
-      <div class="date-controls">
-        <label for="endDate">End Date</label>
-        <input type="date" id="endDate" />
-      </div>
+        <form id="searchForm" class="search-panel">
+          <div class="date-controls">
+            <label for="startDate">From</label>
+            <input type="date" id="startDate" name="startDate" required />
+          </div>
+          <span class="date-separator" aria-hidden="true">to</span>
+          <div class="date-controls">
+            <label for="endDate">Through</label>
+            <input type="date" id="endDate" name="endDate" required />
+          </div>
+          <button id="getImages" type="submit">
+            <span>Explore images</span>
+            <span class="button-arrow" aria-hidden="true">↗</span>
+          </button>
+          <p class="range-hint">Select up to 100 days · APOD archive starts June 16, 1995</p>
+        </form>
+      </section>
 
-      <button id="getImages" type="button">View Space Images</button>
-      <p id="status" class="status"></p>
+      <section class="results-section" aria-labelledby="results-title">
+        <div class="results-heading">
+          <h2 id="results-title">Your cosmic collection</h2>
+          <p id="status" class="status" role="status" aria-live="polite">
+            Choose dates above to get started.
+          </p>
+        </div>
+        <div id="gallery" class="gallery" aria-live="polite"></div>
+      </section>
     </main>
 
-    <section id="gallery" class="gallery" aria-live="polite"></section>
-
-    <script src="script.js"></script>
+    <footer class="site-footer">Imagery and astronomy data provided by NASA's APOD API.</footer>
   </body>
 </html>
