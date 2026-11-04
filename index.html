@@ -1,26 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-     <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Joke Generator</title>
-       <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
-        rel="stylesheet">
-        <link href="styles.css" rel="stylesheet" type="text/css" />
-         <link rel="stylesheet" href="https://"cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/
-         css/all.min.css">
-       </head>
-     <body>
-         <div class="container">
-            <h1> NASA </h1>
-            <button id="Nasa-btn">
-           <i class="fas fa-laugh"></i> Get a Joke
-          </button>
-          <div id="joke-container">
-           <p id="setup"></p>
-           <p id="punchline"></p>
-          </div>
-       </div>
-         <script srcc="script.js"></script>
-       </body>
-       </html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NASA Space Explorer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>NASA Space Explorer</h1>
+      <p>Explore the cosmos through NASA's Astronomy Picture of the Day archive.</p>
+    </header>
+
+    <main class="search-section">
+      <div class="date-controls">
+        <label for="startDate">Start Date</label>
+        <input type="date" id="startDate" />
+      </div>
+
+      <div class="date-controls">
+        <label for="endDate">End Date</label>
+        <input type="date" id="endDate" />
+      </div>
+
+      <button id="getImages" type="button">View Space Images</button>
+      <p id="status" class="status"></p>
+    </main>
+
+    <section id="gallery" class="gallery" aria-live="polite"></section>
+
+    <script src="script.js"></script>
+  </body>
+</html>
