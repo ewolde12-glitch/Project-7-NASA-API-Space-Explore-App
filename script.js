@@ -1,5 +1,5 @@
 const API_URL = "https://api.nasa.gov/planetary/apod";
-const API_KEY = "DEMO_KEY";
+const API_KEY = "PhcWbP9RC69RBGm6zrtnKCRQL8HjfqNNwHJmncfD";
 const EARLIEST_APOD_DATE = "1995-06-16";
 const MAX_RANGE_DAYS = 100;
 
