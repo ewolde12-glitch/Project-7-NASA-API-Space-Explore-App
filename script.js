@@ -5,10 +5,13 @@ const API_URL = "https://api.nasa.gov/planetary/apod";
 const getImages = document.getElementById("getImages");
 const gallery = document.getElementById("gallery");
 const statusMessage = document.getElementById("status");
+const defaultButtonText = getImages.textContent;
 
 async function getRandomSpaceImage() {
   gallery.replaceChildren();
   statusMessage.textContent = "Loading a random NASA image...";
+  getImages.disabled = true;
+  getImages.textContent = "Loading...";
 
   const url = `${API_URL}?count=1&api_key=${API_KEY}`;
 
@@ -64,6 +67,9 @@ async function getRandomSpaceImage() {
     statusMessage.textContent = "Here is your random NASA image.";
   } catch (error) {
     statusMessage.textContent = "Sorry, we could not load a NASA image. Please try again.";
+  } finally {
+    getImages.disabled = false;
+    getImages.textContent = defaultButtonText;
   }
 }
 
