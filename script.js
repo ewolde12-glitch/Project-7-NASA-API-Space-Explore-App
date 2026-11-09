@@ -1,76 +1,99 @@
-const API_URL = "https://science.nasa.gov/wp-json/wp/v2/apod-basic";
-const API_KEY = "bb8j89B9kD8mLjD6D8THDMB8wjc7jnQgkQw98BCb";
-const EARLIEST_APOD_DATE = "1995-06-16";
-const MAX_RANGE_DAYS = 100;
+
+const APOD_ENDPOINT = "https://api.nasa.gov/planetary/apod";
+const NASA_API_KEY = "DEMO_KEY";
+const MAX_RANGE_DAYS = 7;
+const MIN_DATE = "1995-06-16";
 
 const form = document.getElementById("searchForm");
 const startDateInput = document.getElementById("startDate");
 const endDateInput = document.getElementById("endDate");
-const getImagesButton = document.getElementById("getImages");
-const gallery = document.getElementById("gallery");
+const searchButton = document.getElementById("searchButton");
 const statusMessage = document.getElementById("status");
+const gallery = document.getElementById("gallery");
+const imageModal = document.getElementById("imageModal");
+const closeModalButton = document.getElementById("closeModal");
+const modalImage = document.getElementById("modalImage");
+const modalDate = document.getElementById("modalDate");
+const modalTitle = document.getElementById("modalTitle");
+const modalExplanation = document.getElementById("modalExplanation");
+const modalMediaLink = document.getElementById("modalMediaLink");
 
-function formatDate(date) {
+let activeRequest;
+
+function formatLocalDate(date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 }
 
-function addDays(date, days) {
-  const result = new Date(date);
-  result.setDate(result.getDate() + days);
-  return result;
+function formatDisplayDate(date) {
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "long",
+    timeZone: "UTC"
+  }).format(new Date(`${date}T00:00:00Z`));
 }
 
-const today = formatDate(new Date());
-startDateInput.min = EARLIEST_APOD_DATE;
-startDateInput.max = today;
-endDateInput.min = EARLIEST_APOD_DATE;
-endDateInput.max = today;
-startDateInput.value = formatDate(addDays(new Date(), -6));
-endDateInput.value = today;
+function setStatus(message, state = "") {
+  statusMessage.textContent = message;
+  statusMessage.dataset.state = state;
+}
 
-startDateInput.addEventListener("change", () => {
-  endDateInput.min = startDateInput.value || EARLIEST_APOD_DATE;
-  if (endDateInput.value && endDateInput.value < startDateInput.value) {
-    endDateInput.value = startDateInput.value;
+function validateDateRange(startDate, endDate) {
+  if (!startDate || !endDate) {
+    return "Choose both a start date and an end date.";
   }
-});
 
-endDateInput.addEventListener("change", () => {
-  startDateInput.max = endDateInput.value || today;
-  if (startDateInput.value && startDateInput.value > endDateInput.value) {
-    startDateInput.value = endDateInput.value;
+  if (startDate < MIN_DATE || endDate < MIN_DATE) {
+    return "NASA's APOD archive starts on June 16, 1995.";
   }
-});
+
+  if (startDate > endDate) {
+    return "The start date must be on or before the end date.";
+  }
+
+  if (endDate > formatLocalDate(new Date())) {
+    return "Choose a date that is today or earlier.";
+  }
+
+  const dayCount =
+    (Date.parse(`${endDate}T00:00:00Z`) -
+      Date.parse(`${startDate}T00:00:00Z`)) /
+      86_400_000 +
+    1;
+
+  if (dayCount > MAX_RANGE_DAYS) {
+    return `Choose a range of ${MAX_RANGE_DAYS} days or fewer.`;
+  }
+
+  return "";
+}
 
 function createCard(item) {
   const card = document.createElement("article");
   card.className = "card";
 
-  if (item.media_type === "image" && item.url) {
-    const imageLink = document.createElement("a");
-    imageLink.className = "image-link";
-    imageLink.href = item.hdurl || item.url;
-    imageLink.target = "_blank";
-    imageLink.rel = "noopener noreferrer";
-    imageLink.setAttribute("aria-label", `Open full-size image: ${item.title || "NASA APOD"}`);
+  if (item.media_type === "image") {
+    const imageButton = document.createElement("button");
+    imageButton.className = "image-link";
+    imageButton.type = "button";
+    imageButton.setAttribute("aria-label", `View ${item.title}`);
 
     const image = document.createElement("img");
     image.src = item.url;
-    image.alt = item.title || "NASA Astronomy Picture of the Day";
+    image.alt = item.title;
     image.loading = "lazy";
-    imageLink.appendChild(image);
-    card.appendChild(imageLink);
-  } else if (item.url) {
+    imageButton.append(image);
+    imageButton.addEventListener("click", () => showDetails(item));
+    card.append(imageButton);
+  } else {
     const mediaLink = document.createElement("a");
     mediaLink.className = "media-link";
     mediaLink.href = item.url;
     mediaLink.target = "_blank";
     mediaLink.rel = "noopener noreferrer";
-    mediaLink.textContent = item.media_type === "video" ? "▶ Watch this day's video" : "Open NASA media";
-    card.appendChild(mediaLink);
+    mediaLink.textContent = "Open NASA video";
+    card.append(mediaLink);
   }
 
   const content = document.createElement("div");
@@ -78,83 +101,134 @@ function createCard(item) {
 
   const date = document.createElement("p");
   date.className = "card-date";
-  date.textContent = item.date || "NASA APOD";
-  content.appendChild(date);
+  date.textContent = formatDisplayDate(item.date);
 
-  const title = document.createElement("h3");
-  title.textContent = item.title || "Astronomy Picture of the Day";
-  content.appendChild(title);
+  const heading = document.createElement("h3");
+  heading.className = "card-title";
 
-  if (item.explanation) {
-    const explanation = document.createElement("p");
-    explanation.className = "explanation";
-    explanation.textContent = item.explanation;
-    content.appendChild(explanation);
-  }
+  const titleButton = document.createElement("button");
+  titleButton.className = "title-trigger";
+  titleButton.type = "button";
+  titleButton.textContent = item.title;
+  titleButton.addEventListener("click", () => showDetails(item));
+  heading.append(titleButton);
 
-  if (item.copyright) {
-    const copyright = document.createElement("p");
-    copyright.className = "copyright";
-    copyright.textContent = `Image credit: ${item.copyright}`;
-    content.appendChild(copyright);
-  }
+  const explanation = document.createElement("p");
+  explanation.className = "explanation";
+  explanation.textContent = item.explanation;
 
-  card.appendChild(content);
+  content.append(date, heading, explanation);
+  card.append(content);
   return card;
 }
 
-form.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const startDate = startDateInput.value;
-  const endDate = endDateInput.value;
+function showDetails(item) {
+  modalDate.textContent = formatDisplayDate(item.date);
+  modalTitle.textContent = item.title;
+  modalExplanation.textContent = item.explanation;
 
-  if (!startDate || !endDate) {
-    statusMessage.textContent = "Please choose both a start and end date.";
+  const hasImage = item.media_type === "image";
+  modalImage.hidden = !hasImage;
+  modalMediaLink.hidden = hasImage;
+
+  if (hasImage) {
+    modalImage.src = item.hdurl || item.url;
+    modalImage.alt = item.title;
+    modalMediaLink.removeAttribute("href");
+  } else {
+    modalImage.removeAttribute("src");
+    modalImage.alt = "";
+    modalMediaLink.href = item.url;
+  }
+
+  imageModal.showModal();
+}
+
+async function loadImages(startDate, endDate) {
+  const validationMessage = validateDateRange(startDate, endDate);
+  if (validationMessage) {
+    setStatus(validationMessage, "error");
     return;
   }
-  if (startDate < EARLIEST_APOD_DATE || endDate > today || startDate > endDate) {
-    statusMessage.textContent = "Choose a valid date range from June 16, 1995 through today.";
-    return;
+
+  if (activeRequest) {
+    activeRequest.abort();
   }
 
-  const dayCount = Math.round((new Date(`${endDate}T00:00:00`) - new Date(`${startDate}T00:00:00`)) / 86400000) + 1;
-  if (dayCount > MAX_RANGE_DAYS) {
-    statusMessage.textContent = "Please choose a range of 100 days or fewer.";
-    return;
-  }
-
+  const requestController = new AbortController();
+  activeRequest = requestController;
+  searchButton.disabled = true;
+  gallery.setAttribute("aria-busy", "true");
   gallery.replaceChildren();
-  statusMessage.textContent = "Fetching pictures from the cosmos…";
-  getImagesButton.disabled = true;
-  getImagesButton.querySelector("span").textContent = "Loading…";
+  setStatus("Searching NASA's archive…", "loading");
 
-  const params = new URLSearchParams({ start_date: startDate, end_date: endDate, api_key: API_KEY });
+  const url = new URL(APOD_ENDPOINT);
+  url.searchParams.set("api_key", NASA_API_KEY);
+  url.searchParams.set("start_date", startDate);
+  url.searchParams.set("end_date", endDate);
 
   try {
-    const response = await fetch(`${API_URL}?${params}`);
+    const response = await fetch(url, { signal: requestController.signal });
+    const data = await response.json();
+
     if (!response.ok) {
-      throw new Error(`NASA API returned ${response.status}`);
+      throw new Error(data.msg || data.error?.message || "NASA's API request failed.");
     }
 
-    const responseData = await response.json();
-    const items = (Array.isArray(responseData) ? responseData : [responseData])
-      .filter((item) => item && (item.url || item.media_type === "image"))
-      .sort((a, b) => b.date.localeCompare(a.date));
+    const items = (Array.isArray(data) ? data : [data])
+      .filter((item) => item && item.url && item.date && item.title)
+      .sort((first, second) => second.date.localeCompare(first.date));
 
-    if (!items.length) {
-      statusMessage.textContent = "No pictures were returned for those dates. Try another range.";
+    if (items.length === 0) {
+      setStatus("No NASA images were found for those dates.", "empty");
       return;
     }
 
-    const cards = document.createDocumentFragment();
-    items.forEach((item) => cards.appendChild(createCard(item)));
-    gallery.appendChild(cards);
-    statusMessage.textContent = `Showing ${items.length} ${items.length === 1 ? "picture" : "pictures"} · newest first`;
+    gallery.append(...items.map(createCard));
+    setStatus(`${items.length} ${items.length === 1 ? "image" : "images"} found.`, "success");
   } catch (error) {
-    console.error("Unable to load NASA APOD data:", error);
-    statusMessage.textContent = "We couldn't load NASA's pictures right now. Please check your connection and try again.";
+    if (requestController.signal.aborted) {
+      return;
+    }
+
+    setStatus(
+      error instanceof TypeError
+        ? "Could not reach NASA. Check your internet connection and try again."
+        : error.message,
+      "error"
+    );
   } finally {
-    getImagesButton.disabled = false;
-    getImagesButton.querySelector("span").textContent = "Explore images";
+    if (activeRequest === requestController) {
+      searchButton.disabled = false;
+      gallery.setAttribute("aria-busy", "false");
+      activeRequest = null;
+    }
+  }
+}
+
+form.addEventListener("submit", (event) => {
+  event.preventDefault();
+  loadImages(startDateInput.value, endDateInput.value);
+});
+
+closeModalButton.addEventListener("click", () => imageModal.close());
+
+imageModal.addEventListener("click", (event) => {
+  if (event.target === imageModal) {
+    imageModal.close();
   }
 });
+
+const today = new Date();
+const todayString = formatLocalDate(today);
+const firstDate = new Date(today);
+firstDate.setDate(firstDate.getDate() - (MAX_RANGE_DAYS - 1));
+
+startDateInput.min = MIN_DATE;
+startDateInput.max = todayString;
+startDateInput.value = formatLocalDate(firstDate);
+endDateInput.min = MIN_DATE;
+endDateInput.max = todayString;
+endDateInput.value = todayString;
+
+loadImages(startDateInput.value, endDateInput.value);

@@ -1,73 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="Explore NASA's Astronomy Picture of the Day archive by date."
-    />
-    <title>NASA Space Explorer</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="style.css" />
-    <script src="script.js" defer></script>
-  </head>
-  <body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#070b18">
+  <meta name="description" content="Explore NASA's Astronomy Picture of the Day.">
+  <title>NASA Space Explorer</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="stylesheet" href="./style.css">
+  <script src="./script.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
     <header class="site-header">
-      <a class="brand" href="./" aria-label="NASA Space Explorer home">
-        <img
-          class="brand-logo"
-          src="./New%20folder/NASA%20image.png"
-          alt="NASA"
-        />
-        <span>Space Explorer</span>
-      </a>
-      <p class="header-tagline">A window into the universe, powered by NASA.</p>
+      <a class="brand" href="./index.html">NASA Space Explorer</a>
+      <p class="header-tagline">A new view of the universe, every day.</p>
     </header>
 
     <main>
-      <section class="hero" aria-labelledby="page-title">
-        <p class="eyebrow">NASA · Astronomy Picture of the Day</p>
-        <h1 id="page-title">The universe, <span>one day at a time.</span></h1>
+      <section class="hero" aria-labelledby="pageTitle">
+        <p class="eyebrow">NASA Astronomy Picture of the Day</p>
+        <h1 id="pageTitle">Explore the <span>universe</span></h1>
         <p class="intro">
-          Choose a date range and explore the extraordinary images and stories
-          captured by NASA.
+          Browse NASA's daily images and stories from across the cosmos.
+          Choose a date range to start exploring.
         </p>
 
         <form id="searchForm" class="search-panel">
           <div class="date-controls">
             <label for="startDate">From</label>
-            <input type="date" id="startDate" name="startDate" required />
+            <input id="startDate" name="startDate" type="date" required>
           </div>
           <span class="date-separator" aria-hidden="true">to</span>
           <div class="date-controls">
-            <label for="endDate">Through</label>
-            <input type="date" id="endDate" name="endDate" required />
+            <label for="endDate">To</label>
+            <input id="endDate" name="endDate" type="date" required>
           </div>
-          <button id="getImages" type="submit">
-            <span>Explore images</span>
-            <span class="button-arrow" aria-hidden="true">↗</span>
+          <button id="searchButton" type="submit">
+            Explore dates <span class="button-arrow" aria-hidden="true">→</span>
           </button>
-          <p class="range-hint">Select up to 100 days · APOD archive starts June 16, 1995</p>
+          <p class="range-hint">Choose up to 7 days, from June 16, 1995 through today.</p>
         </form>
       </section>
 
-      <section class="results-section" aria-labelledby="results-title">
+      <section class="results-section" aria-labelledby="resultsTitle">
         <div class="results-heading">
-          <h2 id="results-title">Your cosmic collection</h2>
-          <p id="status" class="status" role="status" aria-live="polite">
-            Choose dates above to get started.
-          </p>
+          <h2 id="resultsTitle">Your space gallery</h2>
+          <p id="status" class="status" role="status" aria-live="polite">Loading NASA images…</p>
         </div>
-        <div id="gallery" class="gallery" aria-live="polite"></div>
+        <div id="gallery" class="gallery" aria-busy="true"></div>
       </section>
     </main>
 
-    <footer class="site-footer">Imagery and astronomy data provided by NASA's APOD API.</footer>
-  </body>
+    <dialog id="imageModal" class="image-modal" aria-labelledby="modalTitle">
+      <button id="closeModal" class="modal-close" type="button" aria-label="Close details">×</button>
+      <img id="modalImage" class="modal-image" alt="" hidden>
+      <div class="modal-content">
+        <p id="modalDate" class="card-date"></p>
+        <h2 id="modalTitle"></h2>
+        <p id="modalExplanation" class="explanation"></p>
+        <a id="modalMediaLink" class="media-link" hidden target="_blank" rel="noopener noreferrer">
+          Open NASA media
+        </a>
+      </div>
+    </dialog>
+
+    <footer class="site-footer">
+      <p>Images and descriptions provided by NASA's Astronomy Picture of the Day API.</p>
+    </footer>
+  </div>
+</body>
 </html>
